@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <title>To Do List</title>
+</head>
+<body>
+    <div class="pomodoro">
+        <h2>Pomodoro Timer</h2>
+        <div class="timer">
+            <span id="minutes">25</span>:<span id="seconds">00</span>
+        </div>
+        <div class="pomodoro-options">
+            <label>
+                Work Duration: <input type="number" id="work-duration" value="25" min="1"> minutes
+            </label>
+            <label>
+                Break Duration: <input type="number" id="break-duration" value="5" min="1"> minutes
+            </label>
+        </div>
+        <button id="start-timer">Start</button>
+        <button id="pause-timer">Pause</button>
+        <button id="reset-timer">Reset</button>
+        <div class="session-tracker">
+            Completed Sessions: <span id="session-count">0</span>
+        </div>
+    </div>
+    <div class="card">
+        <input type="text" placeholder="Add Task here">
+        <button>
+            <i class="fas fa-plus"></i>
+            <span>Add Task</span>
+        </button>
+
+    </div>
+    <div class="list">
+        <!-- Removed unnecessary sample tasks -->
+    </div>
+    
+    <footer>
+        <p>Stay productive! Manage your tasks efficiently.</p>
+    </footer>
+    <script>
+        const inputBox = document.querySelector(".card input");
+        const addBtn = document.querySelector(".card button");
+        const listContainer = document.querySelector(".list");
+
+        // Function to add a new task
+        addBtn.addEventListener("click", () => {
+            const taskText = inputBox.value.trim();
+            if (taskText !== "") {
+                const taskDiv = document.createElement("div");
+                taskDiv.classList.add("task");
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.addEventListener("change", () => {
+                    taskSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
+                });
+
+                const taskSpan = document.createElement("span");
+                taskSpan.textContent = taskText;
+
+                const deleteIcon = document.createElement("i");
+                deleteIcon.classList.add("fas", "fa-trash-alt");
+                deleteIcon.addEventListener("click", () => {
+                    listContainer.removeChild(taskDiv);
+                });
+
+                taskDiv.appendChild(checkbox);
+                taskDiv.appendChild(taskSpan);
+                taskDiv.appendChild(deleteIcon);
+                listContainer.appendChild(taskDiv);
+
+                inputBox.value = "";
+            }
+        });
+
+        const startButton = document.getElementById("start-timer");
+        const pauseButton = document.getElementById("pause-timer");
+        const resetButton = document.getElementById("reset-timer");
+        const workInput = document.getElementById("work-duration");
+        const breakInput = document.getElementById("break-duration");
+        const minutesDisplay = document.getElementById("minutes");
+        const secondsDisplay = document.getElementById("seconds");
+        const sessionCountDisplay = document.getElementById("session-count");
+
+        let timerInterval;
+        let timeLeft;
+        let isWorkSession = true;
+        let sessionCount = 0;
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            minutesDisplay.textContent = String(minutes).padStart(2, "0");
+            secondsDisplay.textContent = String(seconds).padStart(2, "0");
+        }
+
+        function startTimer() {
+            if (timerInterval) return; // Prevent multiple intervals
+
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+
+                    if (isWorkSession) {
+                        sessionCount++;
+                        sessionCountDisplay.textContent = sessionCount;
+                        alert("Work session complete! Time for a break.");
+                        timeLeft = parseInt(breakInput.value) * 60;
+                    } else {
+                        alert("Break session complete! Back to work.");
+                        timeLeft = parseInt(workInput.value) * 60;
+                    }
+
+                    isWorkSession = !isWorkSession;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timeLeft = parseInt(workInput.value) * 60;
+            isWorkSession = true;
+            updateTimerDisplay();
+        }
+
+        workInput.addEventListener("change", () => {
+            if (!timerInterval) {
+                timeLeft = parseInt(workInput.value) * 60;
+                updateTimerDisplay();
+            }
+        });
+
+        startButton.addEventListener("click", startTimer);
+        pauseButton.addEventListener("click", pauseTimer);
+        resetButton.addEventListener("click", resetTimer);
+
+        // Initialize timer
+        timeLeft = parseInt(workInput.value) * 60;
+        updateTimerDisplay();
+    </script>
+    
+    
+</body>
+</html>
